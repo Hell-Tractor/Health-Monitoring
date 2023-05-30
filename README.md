@@ -6,6 +6,10 @@
 - `server`：用于接收与处理数据的服务端
 - `client`：前端展示页面
 
+## API
+
+[SwaggerHub](https://app.swaggerhub.com/apis/Hell-Tractor/Health-Monitoring/1.0.0)
+
 ## Contributors
 
 - [@Hell-Tractor](https://github.com/Hell-Tractor)
