@@ -921,6 +921,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "mysql_async",
+ "serde",
 ]
 
 [[package]]
