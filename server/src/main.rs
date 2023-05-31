@@ -30,7 +30,7 @@ lazy_static::lazy_static! {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let port = SETTINGS.read().unwrap().get("server.port").unwrap();
-    println!("Server started at http://127.0.0.1:{port}");
+    println!("Server started at http://0.0.0.0:{port}");
     HttpServer::new(|| {
         App::new().service(
             web::scope("/data")
