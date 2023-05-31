@@ -29,14 +29,16 @@ lazy_static::lazy_static! {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let port = SETTINGS.read().unwrap().get("server.port").unwrap();
+    println!("Server started at http://127.0.0.1:{port}");
     HttpServer::new(|| {
         App::new().service(
             web::scope("/data")
                 .service(data::controller::insert_data)
                 .service(data::controller::retrieve_data)
                 .service(data::controller::retrieve_data_summary)
-        )
-    }).bind(("127.0.0.1", SETTINGS.read().unwrap().get("server.port").unwrap()))?
+        ).wrap(actix_web::middleware::Logger::default())
+    }).bind(("127.0.0.1", port))?
     .run()
     .await
 }
