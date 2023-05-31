@@ -65,10 +65,10 @@ async fn retrieve_data_summary(method: web::Path<String>, query: web::Query<GetD
         .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
         .query_map(
             format!("SELECT min(time) as time, {}(value) as value FROM data WHERE data_type = {} AND time BETWEEN '{}' AND '{}' GROUP BY {} ORDER BY time DESC LIMIT {} OFFSET {};", method, query.data_type as i8, query.begin_time, query.end_time, query.level.to_group_sql("time"), query.page_size, offset),
-            |(time, value)| {
+            |(time, value): (String, f64)| {
                 DataDto {
                     time,
-                    value
+                    value: value.round() as i32
                 }
             }
         ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?;

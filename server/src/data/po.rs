@@ -5,7 +5,7 @@ use super::{vo::DataVo, dto::DataDto};
 #[derive(PartialEq)]
 pub struct DataPo {
     pub id: i32,
-    pub value: f64,
+    pub value: i32,
     pub time: NaiveDateTime,
     pub data_type: i8
 }

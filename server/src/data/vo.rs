@@ -7,7 +7,7 @@ use crate::SETTINGS;
 #[serde(rename_all = "camelCase")]
 pub struct DataVo {
     pub data_type: Type,
-    pub value: f64
+    pub value: i32
 }
 
 #[derive(Deserialize)]
