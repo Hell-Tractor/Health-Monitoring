@@ -13,15 +13,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
       - name: Build
-        run: cd server && cargo build --verbose --release
+        run: cd server && cargo build --verbose --release && ls target/release
       - name: 将二进制文件发送到服务器
         uses: garygrossgarten/github-action-scp@release
         with:
-          local: server/target/release/health_monitoring_server
+          local: server/target/release/health-monitoring-server
           remote: health-monitoring/server
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -30,7 +30,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: server/config.yaml
-          remote: health-monitoring/config.yaml 
+          remote: health-monitoring/config.yaml
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
