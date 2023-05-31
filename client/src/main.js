@@ -12,6 +12,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './assets/sass/app.scss'
 import axios from "axios";
 import {MessageBox,Message} from "element-ui";
+import echarts from 'echarts';
 
 Vue.use(ElementUI);
 Vue.use(PaperDashboard);
@@ -20,6 +21,7 @@ Vue.use(IconsPlugin);
 Vue.prototype.$axios = axios
 Vue.prototype.$confirm=MessageBox.confirm
 Vue.prototype.$message=Message
+Vue.prototype.$echarts = echarts
 
 new Vue({
   router,
