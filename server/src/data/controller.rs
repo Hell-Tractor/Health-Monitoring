@@ -1,13 +1,20 @@
 use actix_web::{get, post, web, Responder};
 use mysql::prelude::Queryable;
 use super::vo::{DataVo, GetDataVo, GetDataSummaryVo};
+use super::po::DataPo;
 use crate::DB;
 use crate::common::PageDto;
 use crate::data::dto::DataDto;
 
 #[post("")]
-async fn insert_data(body: web::Json<DataVo>) -> impl Responder {
-    format!("Inserting data: {:?}", body.value)
+async fn insert_data(body: web::Json<DataVo>) -> actix_web::Result<impl Responder> {
+    let data = DataPo::from(body.0);
+    DB.write().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB write lock"))?
+        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
+        .query_drop(
+            format!("INSERT INTO data (data_type, value, time) VALUES ({}, {}, '{}');", data.data_type as i8, data.value, data.time)
+        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to insert data"))?;
+    Ok("OK")
 }
 
 #[get("")]
