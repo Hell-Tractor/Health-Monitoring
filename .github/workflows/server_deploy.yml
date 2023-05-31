@@ -13,7 +13,7 @@ env:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3
@@ -43,4 +43,5 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd health-monitoring
+            chmod 777 server
             sh run.sh server
