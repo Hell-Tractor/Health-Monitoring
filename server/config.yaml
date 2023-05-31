@@ -1,0 +1,10 @@
+server:
+  port: 9999
+query:
+  default_page: 0
+  default_page_size: 10
+mysql:
+  host: www.nerdtopia.studio
+  user: health
+  password: ${MYSQL_PASSWORD}
+  database: health

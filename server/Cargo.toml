@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.3.1"
+config = "0.13.3"
+lazy_static = "1.4.0"
 mysql_async = "0.32.2"
 serde = { version = "1.0.163", features = ["derive"] }

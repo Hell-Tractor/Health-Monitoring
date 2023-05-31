@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use super::Type;
+use crate::SETTINGS;
 
 #[derive(Deserialize)]
 pub struct DataVo {
@@ -17,9 +18,9 @@ pub struct GetDataVo {
 }
 
 fn default_page() -> i32 {
-    1
+    SETTINGS.read().unwrap().get("query.default_page").unwrap()
 }
 
 fn default_page_size() -> i32 {
-    10
+    SETTINGS.read().unwrap().get("query.default_page_size").unwrap()
 }
