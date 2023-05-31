@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
                 .service(data::controller::retrieve_data)
                 .service(data::controller::retrieve_data_summary)
         ).wrap(actix_web::middleware::Logger::default())
-    }).bind(("127.0.0.1", port))?
+    }).bind(("0.0.0.0", port))?
     .run()
     .await
 }
