@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Serialize, Deserialize, Copy, Clone)]
+#[serde(rename_all = "camelCase")]
 pub enum Type {
     HeartRate, // 0
     BloodPressure, // 1

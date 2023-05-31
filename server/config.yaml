@@ -1,10 +1,11 @@
 server:
   port: 9999
 query:
-  default_page: 0
+  default_page: 1
   default_page_size: 10
 mysql:
   host: www.nerdtopia.studio
+  port: 3306
   user: health
   password: ${MYSQL_PASSWORD}
   database: health
