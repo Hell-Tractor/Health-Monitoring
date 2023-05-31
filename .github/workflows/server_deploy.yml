@@ -1,0 +1,45 @@
+name: Server Deploy
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'server/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cd server && cargo build --verbose --release
+      - name: 将二进制文件发送到服务器
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: server/target/release/health_monitoring_server
+          remote: health-monitoring/server
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      - name: 将配置文件发送到服务器
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: server/config.yaml
+          remote: health-monitoring/config.yaml 
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      - name: Run
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd health-monitoring
+            sh run.sh server
