@@ -23,6 +23,7 @@ pub struct GetDataVo {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum SummaryLevel {
+    Hour,
     Day,
     Week,
     Month,
@@ -32,6 +33,7 @@ pub enum SummaryLevel {
 impl SummaryLevel {
     pub fn to_group_sql(&self, property: &str) -> String {
         match self {
+            SummaryLevel::Hour => format!("DATE({property}), HOUR({property})"),
             SummaryLevel::Day => format!("DATE({property})"),
             SummaryLevel::Week => format!("YEAR({property}), WEEK({property})"),
             SummaryLevel::Month => format!("YEAR({property}), MONTH({property})"),
