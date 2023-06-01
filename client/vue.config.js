@@ -8,12 +8,11 @@ module.exports = {
     hotOnly: false,
     // 接口名前面要有api
     proxy: {
-      '/store_url': {
-        //target: 'http://192.168.202.1:8081', // 后端接口地址
-        target: 'http://localhost:8081',
+      '/data_url': {
+        target: 'http://120.25.236.100:9999', // 后端接口地址
         changeOrigin: true,
         pathRewrite: {
-          "^/store_url": ''
+          "^/data_url": ''
         }
       },
       '/staff_url': {
