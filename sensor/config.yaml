@@ -1,0 +1,10 @@
+server:
+  url: http://120.25.236.100:9999/data
+interval: 1000
+data:
+  - dataType: runningDistance
+    min: 0
+    max: 3000
+  - dataType: walkingDistance
+    min: 0
+    max: 3000
