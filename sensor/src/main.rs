@@ -1,4 +1,5 @@
 use std::sync::RwLock;
+use chrono::Timelike;
 use rand::Rng;
 
 use config::Config;
@@ -10,7 +11,9 @@ mod vo;
 struct DataConfig {
     data_type: data_type::Type,
     min: i32,
-    max: i32
+    max: i32,
+    begin_hour: u32,
+    end_hour: u32
 }
 
 lazy_static! {
@@ -40,13 +43,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             DataConfig {
                 data_type: v.get("dataType").unwrap().into(),
                 min: v.get("min").unwrap().clone().into_int().unwrap() as i32,
-                max: v.get("max").unwrap().clone().into_int().unwrap() as i32
+                max: v.get("max").unwrap().clone().into_int().unwrap() as i32,
+                begin_hour: v.get("beginHour").unwrap_or(&config::Value::new(None, config::ValueKind::I64(0))).clone().into_int().unwrap() as u32,
+                end_hour: v.get("endHour").unwrap_or(&config::Value::new(None, config::ValueKind::I64(24))).clone().into_int().unwrap() as u32
             }
         }).collect::<Vec<DataConfig>>();
     let interval = SETTINGS.read().unwrap().get_int("interval").unwrap() as u64;
     let mut rng = rand::thread_rng();
     loop {
+        let now = chrono::Local::now().naive_local().hour();
         sending_data_types.iter().for_each(|data| {
+            if data.begin_hour > now || data.end_hour < now {
+                return;
+            }
             let value = rng.gen_range(data.min..data.max);
             let data = vo::DataVo {
                 data_type: data.data_type,
