@@ -9,3 +9,16 @@ mysql:
   user: health
   password: ${MYSQL_PASSWORD}
   database: health
+dataRange:
+  heartRate:
+    min: 60
+    max: 100
+  bloodPressureLow:
+    min: 65
+    max: 79
+  bloodPressureHigh:
+    min: 100
+    max: 119
+  bloodOxygen:
+    min: 95
+    max: 100

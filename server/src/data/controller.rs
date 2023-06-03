@@ -1,9 +1,9 @@
 use actix_web::{get, post, web, Responder};
 use chrono::NaiveTime;
 use mysql::prelude::Queryable;
-use super::vo::{DataVo, GetDataVo, GetDataSummaryVo, GetDataSummaryByTimeVo};
+use super::vo::{DataVo, GetDataVo, GetDataSummaryVo, GetDataSummaryByTimeVo, GetDataWarnVo};
 use super::po::DataPo;
-use crate::DB;
+use crate::{DB, SETTINGS};
 use crate::common::PageDto;
 use crate::data::dto::DataDto;
 
@@ -47,7 +47,7 @@ async fn retrieve_data(query: web::Query<GetDataVo>) -> actix_web::Result<impl R
     }))
 }
 
-#[get("/{method}")]
+#[get("/summary/{method}")]
 async fn retrieve_data_summary(method: web::Path<String>, query: web::Query<GetDataSummaryVo>) -> actix_web::Result<impl Responder> {
     let method = method.into_inner();
     if method != "sum" && method != "avg" {
@@ -82,7 +82,7 @@ async fn retrieve_data_summary(method: web::Path<String>, query: web::Query<GetD
 }
 
 
-#[get("/{method}/{interval}")]
+#[get("/summary/{method}/interval/{interval}")]
 async fn get_data_group_by_hour(path: web::Path<(String, u32)>, query: web::Query<GetDataSummaryByTimeVo>) -> actix_web::Result<impl Responder> {
     let (method, interval) = path.into_inner();
     if method != "sum" && method != "avg" {
@@ -126,6 +126,32 @@ async fn get_data_group_by_hour(path: web::Path<(String, u32)>, query: web::Quer
             acc
         });
 
+
+    Ok(web::Json(result))
+}
+
+#[get("/warn")]
+async fn get_data_warn(query: web::Query<GetDataWarnVo>) -> actix_web::Result<impl Responder> {
+    let result: Option<DataDto> = None;
+    let Ok(min) = SETTINGS.read().unwrap().get_int(format!("dataRange.{}.min", serde_json::to_string(&query.data_type).unwrap().trim_matches('"')).as_str()) else {
+        return Ok(web::Json(result));
+    };
+    let Ok(max) = SETTINGS.read().unwrap().get_int(format!("dataRange.{}.max", serde_json::to_string(&query.data_type).unwrap().trim_matches('"')).as_str()) else {
+        return Ok(web::Json(result));
+    };
+    let result = DB.read().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB read lock"))?
+        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
+        .query_map(
+            format!("SELECT value, time FROM data WHERE data_type = {} AND (value < {} OR value > {}) ORDER BY time DESC LIMIT 1;", query.data_type as i8, min, max),
+            |(value, time)| {
+                DataDto {
+                    time,
+                    value
+                }
+            }
+        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
+        .into_iter()
+        .next();
 
     Ok(web::Json(result))
 }

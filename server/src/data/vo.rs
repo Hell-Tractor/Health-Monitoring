@@ -65,6 +65,12 @@ pub struct GetDataSummaryByTimeVo {
     pub day: NaiveDate
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetDataWarnVo {
+    pub data_type: Type
+}
+
 fn default_page() -> i32 {
     SETTINGS.read().unwrap().get("query.default_page").unwrap()
 }
