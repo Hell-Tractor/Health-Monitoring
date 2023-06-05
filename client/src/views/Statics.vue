@@ -91,7 +91,7 @@ export default {
         for (let time = date; time < end; time += dayTime) {
           data.push([
             echarts.time.format(time, '{yyyy}-{MM}-{dd}', false),
-            Math.floor(-1)
+            Math.floor(0)
           ]);
         }
         staticsApi.getDailyStep().then(re => {
