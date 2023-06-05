@@ -91,13 +91,12 @@ export default {
         for (let time = date; time < end; time += dayTime) {
           data.push([
             echarts.time.format(time, '{yyyy}-{MM}-{dd}', false),
-            Math.floor(0)
+            Math.floor(-1)
           ]);
         }
         staticsApi.getDailyStep().then(re => {
           for (var i=0;i<data.length;i++){
             for(var j=0;j<re.data.length;j++) {
-              console.log(re.data[j].time)
               if(re.data[j].time.includes(data[i][0])){
                 data[i][1]=re.data[j].value
                 console.log(data[i][0])
@@ -178,7 +177,7 @@ export default {
         },
         tooltip: {},
         visualMap: {
-          min: 1,
+          min: 0,
           max: 20000,
           type: 'piecewise',
           orient: 'horizontal',
