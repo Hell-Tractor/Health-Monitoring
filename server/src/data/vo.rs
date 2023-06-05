@@ -84,7 +84,7 @@ fn default_end_time() -> NaiveDateTime {
 }
 
 fn default_begin_time() -> NaiveDateTime {
-    default_end_time() - chrono::Duration::days(1)
+    default_end_time() - chrono::Duration::days(14)
 }
 
 fn today() -> NaiveDate {
