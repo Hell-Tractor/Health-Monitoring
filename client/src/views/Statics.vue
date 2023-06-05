@@ -184,7 +184,6 @@ export default {
           left: 'center',
           top: 65
         },
-        gradientColor: ["#ffffff","#d88273","#bf444c"],
         calendar: {
           top: 120,
           left: 30,
@@ -196,6 +195,7 @@ export default {
           },
           yearLabel: { show: false }
         },
+        gradientColor: ["#ffffe0","#d88273","#bf444c"],
         series: {
           type: 'heatmap',
           coordinateSystem: 'calendar',
