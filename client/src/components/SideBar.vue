@@ -38,7 +38,7 @@ export default {
   props: {
     title: {
       type: String,
-      default: "健康管理系统",
+      default: "健康检测系统",
     },
     backgroundColor: {
       type: String,
