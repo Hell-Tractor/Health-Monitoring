@@ -23,7 +23,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: server/target/release/health-monitoring-server
-          remote: health-monitoring/server
+          remote: health-monitoring/health-monitoring-server
           host: ${{ secrets.HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
@@ -43,5 +43,5 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd health-monitoring
-            chmod 777 server
-            sh run.sh server
+            chmod 777 health-monitoring-server
+            sh run.sh health-monitoring-server

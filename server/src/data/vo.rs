@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{NaiveDateTime, NaiveDate};
 use serde::Deserialize;
 use super::Type;
 use crate::SETTINGS;
@@ -57,6 +57,20 @@ pub struct GetDataSummaryVo {
     pub page_size: i32
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetDataSummaryByTimeVo {
+    pub data_type: Type,
+    #[serde(default = "today")]
+    pub day: NaiveDate
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetDataWarnVo {
+    pub data_type: Type
+}
+
 fn default_page() -> i32 {
     SETTINGS.read().unwrap().get("query.default_page").unwrap()
 }
@@ -71,4 +85,8 @@ fn default_end_time() -> NaiveDateTime {
 
 fn default_begin_time() -> NaiveDateTime {
     default_end_time() - chrono::Duration::days(1)
+}
+
+fn today() -> NaiveDate {
+    chrono::Local::now().naive_local().into()
 }
