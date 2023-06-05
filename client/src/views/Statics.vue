@@ -184,7 +184,7 @@ export default {
           left: 'center',
           top: 65
         },
-        color: ["#FFFFFF","#91cc75","#fac858","#ee6666","#73c0de"],
+        gradientColor: ["#ffffff","#d88273","#bf444c"],
         calendar: {
           top: 120,
           left: 30,
