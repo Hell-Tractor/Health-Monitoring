@@ -1,4 +1,4 @@
-name: client deploy
+name: Client Deploy
 
 on:
     push:
@@ -17,16 +17,16 @@ jobs:
               uses: actions/setup-node@v2
               with:
                 node-version: "16.16.0"
-            - run: yarn install
+            - run: cd client && yarn install
               name: install dependencies
-            - run: yarn build
+            - run: cd client && yarn build
               name: build
             - name: tar dist directory
-              run: tar -czvf dist.tar.gz dist
+              run: cd client && tar -czvf dist.tar.gz dist
             - name: upload to server
               uses: garygrossgarten/github-action-scp@release
               with:
-                local: dist.tar.gz
+                local: client/dist.tar.gz
                 remote: health-monitoring/dist.tar.gz
                 host: ${{ secrets.HOST }}
                 username: ${{ secrets.SSH_USER }}
