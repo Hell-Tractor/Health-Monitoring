@@ -39,7 +39,8 @@ async fn main() -> std::io::Result<()> {
                 .service(data::controller::retrieve_data_summary)
                 .service(data::controller::get_data_group_by_hour)
                 .service(data::controller::get_data_warn)
-        ).wrap(actix_web::middleware::Logger::default())
+        ).service(actix_files::Files::new("", "./static").index_file("index.html"))
+        .wrap(actix_web::middleware::Logger::default())
     }).bind(("0.0.0.0", port))?
     .run()
     .await
