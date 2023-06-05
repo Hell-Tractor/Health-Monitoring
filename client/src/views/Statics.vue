@@ -1,17 +1,31 @@
 <template>
   <div>
-    <el-row :gutter="20">
-      <el-col :span="12" :offset="1">
+    <el-row :gutter="20"  style="margin-top: 20px;">
+      <el-col :span="7" style="margin-left: 20px;">
         <div class="card">
           <div class="card-body">
-            <div id="echarts" style="width: 550px; height: 300px; margin-top: 30px;"></div>
+            <el-descriptions title="健康小贴士" column=1 style="margin-left: 10px;">
+              <el-descriptions-item label="wjx言" colon=false>多读书 多看报 少吃零食 多睡觉</el-descriptions-item>
+              <el-descriptions-item label="cym言" colon=false>健康生活 是幸福的开始</el-descriptions-item>
+              <el-descriptions-item label="老舍言" colon=false>健壮比美更重要</el-descriptions-item>
+              <el-descriptions-item label="爱默生言" colon=false>健康是人生第一财富</el-descriptions-item>
+            </el-descriptions>
           </div>
         </div>
       </el-col>
-      <el-col :span="11" :offset="0">
+      <el-col :span="16" style="margin-left: 10px;">
         <div class="card">
           <div class="card-body">
-            <div id="distance_chart" style="width: 450px; height: 315px; margin-top: 15px;"></div>
+            <div id="difference_chart" style="width: 770px; height: 175px; margin-top: 5px;"></div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row :gutter="25"  style="margin-top: 20px;">
+      <el-col :span="23" style="margin-left: 20px;">
+        <div class="card">
+          <div class="card-body">
+            <div id="year_chart" style="width: 1100px; height: 250px; margin-top: -20px; margin-left: 15px"></div>
           </div>
         </div>
       </el-col>
@@ -21,7 +35,7 @@
 
 <script>
 import StatsCard from "@/components/Cards/StatsCard";
-import dataApi from '@/api/data';
+import staticsApi from '@/api/statics';
 import * as echarts from 'echarts';
 
 export default {
@@ -30,174 +44,171 @@ export default {
   },
   data() {
     return {
-      heartRate:'',
-      bloodPressure:'',
-      bloodOxygen:'',
-      chart: null,
-      distanceChart: null,
+      differentChart: null,
+      yearChart: null,
+      walkingDistance: [],
+      runningDistance: [],
+      stepData: [],
     }
   },
   async created() {
-    this.heartRate = await dataApi.getHeartRate().then(re => {
-      return re.data[0].value
+    await staticsApi.getWalkDistanceForTwoWeeks().then(re => {
+      for(var i=0;i<re.data.length;i++) {
+        this.walkingDistance.push(re.data[i].value)
+      }
+      console.log(this.walkingDistance)
     })
-    this.bloodPressure =await dataApi.getBloodPressure().then(re => {
-      return re.data[0].value
+    await staticsApi.getRunDistanceForTwoWeeks().then(re => {
+      for(var i=0;i<re.data.length;i++) {
+        this.runningDistance.push(re.data[i].value)
+      }
     })
-    this.bloodOxygen =await dataApi.getBloodOxygen().then(re => {
-      return re.data[0].value
-    })
+    this.different_chart_init()
+    this.getData('2023')
+    this.year_chart_init()
   },
   methods: {
     async update() {
-      this.heartRate = await dataApi.getHeartRate().then(re => {
-        return re.data[0].value
+      await staticsApi.getWalkDistanceForTwoWeeks().then(re => {
+        for(var i=0;i<re.data.length;i++) {
+          this.walkingDistance[i]=(re.data[i].value)
+        }
       })
-      this.bloodPressure = await dataApi.getBloodPressure().then(re => {
-        return re.data[0].value
+      await staticsApi.getRunDistanceForTwoWeeks().then(re => {
+        for(var i=0;i<re.data.length;i++) {
+          this.runningDistance[i]=(re.data[i].value)
+        }
       })
-      this.bloodOxygen =await dataApi.getBloodOxygen().then(re => {
-        return re.data[0].value
-      })
+      this.different_chart_init()
+      this.getData('2023')
+      this.year_chart_init()
     },
-    init1() {
+    getData(year) {
+        const date = +echarts.time.parse(year + '-01-01');
+        const end = +echarts.time.parse(+year + 1 + '-01-01');
+        const dayTime = 3600 * 24 * 1000;
+        const data = [];
+        for (let time = date; time < end; time += dayTime) {
+          data.push([
+            echarts.time.format(time, '{yyyy}-{MM}-{dd}', false),
+            Math.floor(0)
+          ]);
+        }
+        staticsApi.getDailyStep().then(re => {
+          for (var i=0;i<data.length;i++){
+            for(var j=0;j<re.data.length;j++) {
+              console.log(re.data[j].time)
+              if(re.data[j].time.includes(data[i][0])){
+                data[i][1]=re.data[j].value
+                console.log(data[i][0])
+              }
+            }
+          }
+          this.stepData=data
+          console.log(this.stepData)
+        })
+        return data;
+      },
+    different_chart_init() {
       // 初始化
-      this.chart = echarts.init(document.getElementById("echarts"));
+      this.differentChart = echarts.init(document.getElementById("difference_chart"));
       // 配置数据
       let option = {
         tooltip: {
           trigger: 'axis',
           axisPointer: {
-            type: 'cross',
-            crossStyle: {
-              color: '#999'
-            }
+            // Use axis to trigger tooltip
+            type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
           }
         },
-      toolbox: {
-        feature: {
-          //dataView: { show: true, readOnly: false },
-          magicType: { show: true, type: ['line', 'bar'] },
-          restore: { show: true },
-          //saveAsImage: { show: true }
-        }
-      },
-      legend: {
-        data: ['已爬楼层', '步数']
-      },
-      xAxis: [
-        {
+        legend: {},
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'value'
+        },
+        yAxis: {
           type: 'category',
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          axisPointer: {
-            type: 'shadow'
-          }
-        }
-      ],
-      yAxis: [
-        {
-          type: 'value',
-          name: '已爬楼层',
-          min: 0,
-          max: 250,
-          interval: 50,
-          axisLabel: {
-            formatter: '{value}'
-          }
+          data: ['本周', '上周']
         },
-        {
-          type: 'value',
-          name: '步数',
-          min: 0,
-          max: 25,
-          interval: 5,
-          axisLabel: {
-            formatter: '{value}'
-          }
-        }
-      ],
-      series: [
-        {
-          name: '已爬楼层',
-          type: 'bar',
-          tooltip: {
-            valueFormatter: function (value) {
-              return value;
-            }
-          },
-          data: [
-            2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3
-          ]
-        },
-        {
-          name: '步数',
-          type: 'line',
-          yAxisIndex: 1,
-          tooltip: {
-            valueFormatter: function (value) {
-              return value;
-            }
-          },
-          data: [2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2]
-        }
-      ]
-      };
-      // 传入数据
-      this.chart.setOption(option);
-    },
-    init2() {
-      this.distanceChart = echarts.init(document.getElementById("distance_chart"));
-      let option = {
-        angleAxis: {
-          type: 'category',
-          data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        },
-        radiusAxis: {},
-        polar: {},
         series: [
           {
+            name: '步行距离',
             type: 'bar',
-            data: [1, 2, 3, 4, 3, 5, 1],
-            coordinateSystem: 'polar',
-            name: 'A',
-            stack: 'a',
+            stack: 'total',
+            label: {
+              show: true
+            },
             emphasis: {
               focus: 'series'
-            }
+            },
+            data: this.walkingDistance
           },
           {
+            name: '跑步距离',
             type: 'bar',
-            data: [2, 4, 6, 1, 3, 2, 1],
-            coordinateSystem: 'polar',
-            name: 'B',
-            stack: 'a',
+            stack: 'total',
+            label: {
+              show: true
+            },
             emphasis: {
               focus: 'series'
-            }
-          },
-          {
-            type: 'bar',
-            data: [1, 2, 3, 4, 1, 2, 5],
-            coordinateSystem: 'polar',
-            name: 'C',
-            stack: 'a',
-            emphasis: {
-              focus: 'series'
-            }
+            },
+            data: this.runningDistance
           }
-        ],
-        legend: {
-          show: true,
-          data: ['A', 'B', 'C']
+        ]
+      };
+      // 传入数据
+      this.differentChart.setOption(option);
+    },
+    year_chart_init() {
+      // 初始化
+      this.yearChart = echarts.init(document.getElementById("year_chart"));
+      // 配置数据
+      
+      let option = {
+        title: {
+          top: 30,
+          left: 'center',
+          text: '每日步数记录'
+        },
+        tooltip: {},
+        visualMap: {
+          min: 1,
+          max: 20000,
+          type: 'piecewise',
+          orient: 'horizontal',
+          left: 'center',
+          top: 65
+        },
+        calendar: {
+          top: 120,
+          left: 30,
+          right: 30,
+          cellSize: ['auto', 13],
+          range: '2023',
+          itemStyle: {
+            borderWidth: 0.5
+          },
+          yearLabel: { show: false }
+        },
+        series: {
+          type: 'heatmap',
+          coordinateSystem: 'calendar',
+          data: this.stepData
         }
       };
-      this.distanceChart.setOption(option);
+      this.yearChart.setOption(option)
     }
   },
   mounted() {
-    this.init1(),
-    this.init2(),
-    this.update()
+    this.different_chart_init(),
+    this.getData('2023'),
+    this.year_chart_init()
   }
 }
 </script>
