@@ -120,6 +120,7 @@ export default {
             type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
           }
         },
+        color: ['#91cc75', '#fac858'],
         legend: {},
         grid: {
           left: '3%',
