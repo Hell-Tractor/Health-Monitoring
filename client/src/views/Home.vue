@@ -233,7 +233,7 @@ export default {
             }
           }
         },
-        color: ["#bccbe5","#dd8385","#ffd5ab"],
+        color: ["#ba9db9","#ead7ea","#ffd5ab"],
         toolbox: {
           feature: {
             //dataView: { show: true, readOnly: false },
