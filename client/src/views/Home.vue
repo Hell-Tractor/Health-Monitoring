@@ -296,6 +296,7 @@ export default {
               }
             },
             color: ["#bccbe5","#b1d0a9","#ffd5ab"],
+            gradientColor: ["#bccbe5","#b1d0a9","#ffd5ab"],
             data: this.stepNum
           }
         ]
