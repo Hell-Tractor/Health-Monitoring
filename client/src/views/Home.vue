@@ -295,6 +295,7 @@ export default {
                 return value;
               }
             },
+            color: ['#bccbe5', '#b1d0a9'],
             data: this.stepNum
           }
         ]
