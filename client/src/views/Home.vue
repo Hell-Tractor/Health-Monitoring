@@ -233,7 +233,6 @@ export default {
             }
           }
         },
-        color: ['#91cc75', '#fac858',"#ffd5ab"],
         toolbox: {
           feature: {
             //dataView: { show: true, readOnly: false },
@@ -313,6 +312,7 @@ export default {
             type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
           }
         },
+        color: ['#fac858', '#ee6666'],
         legend: {},
         grid: {
           left: '3%',
