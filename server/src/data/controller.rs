@@ -3,7 +3,7 @@ use chrono::NaiveTime;
 use mysql::prelude::Queryable;
 use super::vo::{DataVo, GetDataVo, GetDataSummaryVo, GetDataSummaryByTimeVo, GetDataWarnVo};
 use super::po::DataPo;
-use crate::{DB, SETTINGS};
+use crate::common::{DB, SETTINGS};
 use crate::common::PageDto;
 use crate::data::dto::DataDto;
 

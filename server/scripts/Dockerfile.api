@@ -1,0 +1,5 @@
+FROM ubuntu:latest
+COPY health-monitoring-server-api .
+COPY config.yaml .
+ENV SERVER_PORT=9999
+CMD [ "./health-monitoring-server-api" ]

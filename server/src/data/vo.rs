@@ -1,7 +1,7 @@
 use chrono::{NaiveDateTime, NaiveDate};
 use serde::Deserialize;
 use super::Type;
-use crate::SETTINGS;
+use crate::common::SETTINGS;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

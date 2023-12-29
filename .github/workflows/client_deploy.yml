@@ -42,3 +42,4 @@ jobs:
                     rm -r ./static
                     tar -xzvf dist.tar.gz
                     mv dist static
+                    docker cp static health-monitoring-server-static:.
