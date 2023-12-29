@@ -1,6 +1,6 @@
 FROM ubuntu:latest
 COPY health-monitoring-server-static .
 COPY config.yaml .
-COPY --from=src static ./static
+COPY static ./static
 ENV SERVER_PORT=9998
 CMD [ "./health-monitoring-server-static" ]
