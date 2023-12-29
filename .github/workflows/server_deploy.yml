@@ -82,6 +82,7 @@ jobs:
           script: |
             cd health-monitoring
             unzip -o health-monitoring.zip
+            mv -r temp/* . -f
             sh remove-service.sh
             export MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}
             sh create-service.sh
