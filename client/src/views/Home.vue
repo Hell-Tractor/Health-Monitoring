@@ -10,7 +10,7 @@
             <p>心率</p>{{this.heartRate}}
           </div>
           <div class="stats" slot="footer">
-            <i class="ti-alert"></i> {{ this.heartRateTime}}  {{ this.heartRateValue }} 次/分
+            <i class="ti-alert"  :class="`icon-warning`"></i> {{ this.heartRateTime}}  {{ this.heartRateValue }} 次/分
           </div>
         </stats-card>
       </el-col>
@@ -23,7 +23,7 @@
             <p>血压</p>{{this.bloodPressureLow}} / {{this.bloodPressureHigh}}
           </div>
           <div class="stats" slot="footer">
-            <i class="ti-alert"></i> {{ this.bloodPressureTime}}  高压 {{ this.bloodPressureValue }} 
+            <i class="ti-alert" :class="`icon-warning`"></i> {{ this.bloodPressureTime}}  高压 {{ this.bloodPressureValue }} 
           </div>
         </stats-card>
       </el-col>
@@ -36,7 +36,7 @@
             <p>血氧饱和度</p>{{this.bloodOxygen}}%
           </div>
           <div class="stats" slot="footer">
-            <i class="ti-alert"></i> {{ this.bloodOxygenTime}} {{ this.bloodOxygenValue }}%
+            <i class="ti-alert" :class="`icon-warning`"></i> {{ this.bloodOxygenTime}} {{ this.bloodOxygenValue }}%
           </div>
         </stats-card>
       </el-col>
@@ -237,7 +237,7 @@ export default {
           feature: {
             //dataView: { show: true, readOnly: false },
             magicType: { show: true, type: ['line', 'bar'] },
-            restore: { show: true },
+            //restore: { show: true },
             //saveAsImage: { show: true }
           }
         },
@@ -312,6 +312,7 @@ export default {
             type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
           }
         },
+        color: ['#ee6666','#fac858'],
         legend: {},
         grid: {
           left: '3%',

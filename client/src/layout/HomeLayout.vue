@@ -2,7 +2,7 @@
   <div class="wrapper">
     <side-bar>
       <template slot="links">
-        <sidebar-link to="/home" name="主页" icon="ti-heart" />
+        <sidebar-link to="/home" name="每日健康" icon="ti-heart" />
         <sidebar-link to="/statics" name="统计数据" icon="ti-stats-up" />
       </template>
     </side-bar>

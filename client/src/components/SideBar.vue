@@ -6,7 +6,7 @@
   >
     <div class="sidebar-wrapper" id="style-3">
       <div class="logo">
-        <a href="/home" class="simple-text">
+        <a href="/#/home" class="simple-text">
           <div class="logo-img">
             <img src="@/assets/img/vue-logo.png" alt="" />
           </div>
@@ -38,7 +38,7 @@ export default {
   props: {
     title: {
       type: String,
-      default: "健康管理系统",
+      default: "健康监测系统",
     },
     backgroundColor: {
       type: String,

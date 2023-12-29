@@ -97,7 +97,6 @@ export default {
         staticsApi.getDailyStep().then(re => {
           for (var i=0;i<data.length;i++){
             for(var j=0;j<re.data.length;j++) {
-              console.log(re.data[j].time)
               if(re.data[j].time.includes(data[i][0])){
                 data[i][1]=re.data[j].value
                 console.log(data[i][0])
@@ -121,6 +120,7 @@ export default {
             type: 'shadow' // 'shadow' as default; can also be 'line' or 'shadow'
           }
         },
+        color: ['#91cc75', '#fac858'],
         legend: {},
         grid: {
           left: '3%',
@@ -178,7 +178,7 @@ export default {
         },
         tooltip: {},
         visualMap: {
-          min: 1,
+          min: 0,
           max: 20000,
           type: 'piecewise',
           orient: 'horizontal',
@@ -196,6 +196,7 @@ export default {
           },
           yearLabel: { show: false }
         },
+        gradientColor: ["#ffffe0","#d88273","#bf444c"],
         series: {
           type: 'heatmap',
           coordinateSystem: 'calendar',

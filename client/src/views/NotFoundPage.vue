@@ -60,8 +60,8 @@
           </ul>
         </nav>
         <div class="copyright pull-right">
-          &copy; 2017, made with
-          <i class="fa fa-heart heart"></i> by Paper admin
+          &copy; 2023, made with
+          <i class="fa fa-heart heart"></i> by wjx
         </div>
       </div>
     </footer>
