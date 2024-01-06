@@ -1,6 +1,8 @@
 use actix_web::{get, post, web, Responder};
-use chrono::NaiveTime;
-use mysql::prelude::Queryable;
+use chrono::{NaiveDateTime, NaiveTime, Timelike};
+use futures::StreamExt;
+use mongodb::bson::{doc, Document};
+use mongodb::options::AggregateOptions;
 use super::vo::{DataVo, GetDataVo, GetDataSummaryVo, GetDataSummaryByTimeVo, GetDataWarnVo};
 use super::po::DataPo;
 use crate::common::{DB, SETTINGS};
@@ -11,10 +13,8 @@ use crate::data::dto::DataDto;
 async fn insert_data(body: web::Json<DataVo>) -> actix_web::Result<impl Responder> {
     let data = DataPo::from(body.0);
     DB.write().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB write lock"))?
-        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
-        .query_drop(
-            format!("INSERT INTO data (data_type, value, time) VALUES ({}, {}, '{}');", data.data_type as i8, data.value, data.time)
-        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to insert data"))?;
+        .collection("data")
+        .insert_one(data, None).await.map_err(|_| actix_web::error::ErrorInternalServerError("Failed to insert data"))?;
     Ok("OK")
 }
 
@@ -29,16 +29,18 @@ async fn retrieve_data(query: web::Query<GetDataVo>) -> actix_web::Result<impl R
 
     let offset = (query.page - 1) * query.page_size;
     let result = DB.read().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB read lock"))?
-        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
-        .query_map(
-            format!("SELECT value, time FROM data WHERE data_type = {} ORDER BY time DESC LIMIT {} OFFSET {};", query.data_type as i8, query.page_size, offset),
-            |(value, time)| {
-                DataDto {
-                    time,
-                    value
-                }
-            }
-        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?;
+        .collection("data")
+        .find(
+            doc! { "data_type": (query.data_type as i32) },
+            mongodb::options::FindOptions::builder()
+                .sort(doc! { "time": -1 })
+                .limit(Some(query.page_size as i64))
+                .skip(Some(offset as u64))
+                .build()
+        ).await.map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
+        .filter_map(|item: Result<Document, _>| async {
+            item.ok().map(|item| DataDto::from(item))
+        }).collect::<Vec<_>>().await;
 
     Ok(web::Json(PageDto {
         page: query.page,
@@ -62,17 +64,42 @@ async fn retrieve_data_summary(method: web::Path<String>, query: web::Query<GetD
     }
 
     let offset = (query.page - 1) * query.page_size;
-    let result = DB.read().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB read lock"))?
-        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
-        .query_map(
-            format!("SELECT min(time) as time, {}(value) as value FROM data WHERE data_type = {} AND time BETWEEN '{}' AND '{}' GROUP BY {} ORDER BY time DESC LIMIT {} OFFSET {};", method, query.data_type as i8, query.begin_time, query.end_time, query.level.to_group_sql("time"), query.page_size, offset),
-            |(time, value): (String, f64)| {
-                DataDto {
-                    time,
-                    value: value.round() as i32
+    let filter = doc! {
+        "data_type": query.data_type as i32,
+        "time": { "$gte": query.begin_time.timestamp(), "$lte": query.end_time.timestamp() }
+    };
+
+    let pipeline = vec![
+        doc! {
+            "$match": filter
+        },
+        doc! {
+            "$group": {
+                "$_id": query.level.to_group_sql("$time"),
+                "$time": {
+                    "$min": "$time"
+                },
+                "value": {
+                    "$sum": "$value"
                 }
             }
-        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?;
+        },
+        doc! {
+            "$sort": {
+                "time": -1
+            },
+            "$limit": query.page_size,
+            "$skip": offset
+        }
+    ];
+
+    let result = DB.write().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB write lock"))?
+        .collection::<Document>("data")
+        .aggregate(pipeline, AggregateOptions::default())
+        .await.map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
+        .filter_map(|item: Result<Document, _>| async {
+            item.ok().map(|item| DataDto::from(item))
+        }).collect::<Vec<_>>().await;
 
     Ok(web::Json(PageDto {
         page: query.page,
@@ -102,14 +129,22 @@ async fn get_data_group_by_hour(path: web::Path<(String, u32)>, query: web::Quer
     }
 
     let result = DB.read().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB read lock"))?
-        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
-        .query_map(
-            format!("SELECT hour(time), value FROM data WHERE data_type = {} AND date(time) = '{}';", query.data_type as i8, query.day),
-            |(time, value): (u32, i32)| {
-                (time, value)
-            }
-        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
-        .into_iter()
+        .collection("data")
+        .find(
+            doc! {
+                "data_type": query.data_type as i32,
+                "time": { "$gte": query.day.and_hms_opt(0, 0, 0).unwrap().timestamp(), "$lte": query.day.and_hms_opt(23, 59, 59).unwrap().timestamp() }
+            },
+            mongodb::options::FindOptions::builder()
+                .sort(doc! { "time": -1 })
+                .build()
+        ).await.map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
+        .filter_map(|item: Result<Document, _>| async {
+            item.ok().map(|item| (
+                NaiveDateTime::from_timestamp_opt(item.get_i64("time").unwrap(), 0).unwrap().time().hour(),
+                item.get_i32("value").unwrap()
+            ))
+        })
         // gourp by every {interval} hour
         .fold({
             let mut vec = Vec::<DataDto>::new();
@@ -120,14 +155,15 @@ async fn get_data_group_by_hour(path: web::Path<(String, u32)>, query: web::Quer
                 });
             }
             vec
-        }, |mut acc, (time, value)| {
+        }, |mut acc, (time, value)| async move {
             let index = (time / interval) as usize;
             acc[index].value += value;
             acc
-        });
+        }).await;
 
 
     Ok(web::Json(result))
+    // Ok(web::Json("OK"))
 }
 
 #[get("/warn")]
@@ -140,18 +176,23 @@ async fn get_data_warn(query: web::Query<GetDataWarnVo>) -> actix_web::Result<im
         return Ok(web::Json(result));
     };
     let result = DB.read().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB read lock"))?
-        .get_conn().map_err(|_| actix_web::error::ErrorInternalServerError("Failed to get DB connection"))?
-        .query_map(
-            format!("SELECT value, time FROM data WHERE data_type = {} AND (value < {} OR value > {}) ORDER BY time DESC LIMIT 1;", query.data_type as i8, min, max),
-            |(value, time)| {
-                DataDto {
-                    time,
-                    value
-                }
-            }
-        ).map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
-        .into_iter()
-        .next();
+        .collection("data")
+        .find(
+            doc! {
+                "data_type": query.data_type as i32,
+                "$or": [
+                    { "value": { "$lt": min } },
+                    { "value": { "$gt": max } }
+                ]
+            },
+            mongodb::options::FindOptions::builder()
+                .sort(doc! { "time": -1 })
+                .limit(Some(1))
+                .build()
+        ).await.map_err(|_| actix_web::error::ErrorInternalServerError("Failed to query data"))?
+        .filter_map(|item: Result<Document, _>| async {
+            item.ok().map(|item| DataDto::from(item))
+        }).collect::<Vec<_>>().await.get(0).map(|item| item.clone());
 
     Ok(web::Json(result))
 }

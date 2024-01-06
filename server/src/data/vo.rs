@@ -1,4 +1,5 @@
 use chrono::{NaiveDateTime, NaiveDate};
+use mongodb::bson::{Document, doc};
 use serde::Deserialize;
 use super::Type;
 use crate::common::SETTINGS;
@@ -31,13 +32,13 @@ pub enum SummaryLevel {
 }
 
 impl SummaryLevel {
-    pub fn to_group_sql(&self, property: &str) -> String {
+    pub fn to_group_sql(&self, property: &str) -> Document {
         match self {
-            SummaryLevel::Hour => format!("DATE({property}), HOUR({property})"),
-            SummaryLevel::Day => format!("DATE({property})"),
-            SummaryLevel::Week => format!("YEAR({property}), WEEK({property})"),
-            SummaryLevel::Month => format!("YEAR({property}), MONTH({property})"),
-            SummaryLevel::Year => format!("YEAR({property})")
+            SummaryLevel::Hour => doc! { "$date": property, "$hour": property },
+            SummaryLevel::Day => doc! { "$date": property },
+            SummaryLevel::Week => doc! { "$year": property, "$week": property },
+            SummaryLevel::Month => doc! { "$year": property, "$month": property },
+            SummaryLevel::Year => doc! { "$year": property }
         }
     }
 }

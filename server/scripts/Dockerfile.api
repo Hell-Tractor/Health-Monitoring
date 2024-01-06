@@ -1,6 +1,8 @@
-FROM ubuntu:latest
+FROM ubuntu:20.04
+RUN apt update && apt install openssl
 COPY health-monitoring-server-api .
 RUN chmod +x health-monitoring-server-api
 COPY config.yaml .
 ENV SERVER_PORT=9999
+EXPOSE ${SERVER_PORT}
 CMD [ "./health-monitoring-server-api" ]

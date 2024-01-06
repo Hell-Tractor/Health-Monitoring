@@ -1,11 +1,9 @@
 query:
   default_page: 1
   default_page_size: 10
-mysql:
+mongodb:
   host: 120.25.236.100
-  port: 3306
-  user: health
-  password: ${MYSQL_PASSWORD}
+  port: 27017
   database: health
 dataRange:
   heartRate:

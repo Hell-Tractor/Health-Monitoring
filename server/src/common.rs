@@ -17,16 +17,14 @@ lazy_static::lazy_static! {
         .build().unwrap()
     );
 
-    pub static ref DB: RwLock<mysql::Pool> = {
-        let user = SETTINGS.read().unwrap().get_string("mysql.user").unwrap();
-        let password = SETTINGS.read().unwrap().get_string("mysql.password").unwrap();
-        let host = SETTINGS.read().unwrap().get_string("mysql.host").unwrap();
-        let port = SETTINGS.read().unwrap().get_string("mysql.port").unwrap();
-        let database = SETTINGS.read().unwrap().get_string("mysql.database").unwrap();
+    pub static ref DB: RwLock<mongodb::Database> = {
+        let host = SETTINGS.read().unwrap().get_string("mongodb.host").unwrap();
+        let port = SETTINGS.read().unwrap().get_string("mongodb.port").unwrap();
+        let database = SETTINGS.read().unwrap().get_string("mongodb.database").unwrap();
+        let client_options = mongodb::options::ClientOptions::builder().hosts(vec![format!("mongodb://{}:{}", host, port).parse().unwrap()]);
+        let client = mongodb::Client::with_options(client_options.build()).unwrap();
         RwLock::new(
-            mysql::Pool::new(
-                format!("mysql://{}:{}@{}:{}/{}", user, password, host, port, database).as_str()
-            ).unwrap()
+            client.database(database.as_str())
         )
     };
 }
